@@ -21,15 +21,19 @@ export const useHttpClient = () => {
             });
 
             const responseData = await response.json();
+
+            activeHtttpRequest.current = activeHtttpRequest.current.filter(reqCtrl => reqCtrl !== httpAbortCtl)
             if (!response.ok) {
             throw new Error(responseData.message);
             }
-
+            
+            setIsLoading(false);
             return responseData;
         }catch(err) {
             setError(err.message);
-        }
             setIsLoading(false);
+            throw err;
+        }
         }, []);
 
         const clearError = () => {
@@ -39,7 +43,7 @@ export const useHttpClient = () => {
         // It will run some clear up logic when the component unmounts
         useEffect(() => {
             return () => {
-                activeHtttpRequest.current.forEach(abortCtr.abortCtr);
+                activeHtttpRequest.current.forEach(abortCtrl => abortCtrl.abort());
             };
         }, []);
 
